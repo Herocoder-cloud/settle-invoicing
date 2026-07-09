@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Settle — Freelance Invoice Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="authScreen" class="auth-screen">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <span class="auth-brand-icon">◆</span>
+      <span class="auth-brand-name">Settle</span>
+    </div>
+    <p class="auth-tagline">Chase fewer payments. Get paid on time.</p>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" data-tab="login">Log in</button>
+      <button class="auth-tab" data-tab="signup">Sign up</button>
+    </div>
+
+    <form id="loginForm" class="auth-form">
+      <label>Email</label>
+      <input type="email" id="loginEmail" required autocomplete="email" />
+      <label>Password</label>
+      <input type="password" id="loginPassword" required autocomplete="current-password" />
+      <button type="submit" class="auth-submit">Log in</button>
+      <p class="auth-error" id="loginError"></p>
+    </form>
+
+    <form id="signupForm" class="auth-form hidden">
+      <label>Email</label>
+      <input type="email" id="signupEmail" required autocomplete="email" />
+      <label>Password (min 6 characters)</label>
+      <input type="password" id="signupPassword" required autocomplete="new-password" />
+      <button type="submit" class="auth-submit">Create account</button>
+      <p class="auth-error" id="signupError"></p>
+    </form>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="appScreen" class="app-screen hidden">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-icon">◆</span>
+      <span>Settle</span>
+    </div>
+    <div class="topbar-right">
+      <span class="user-email" id="userEmail"></span>
+      <button id="logoutBtn" class="logout-btn">Log out</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="stats-row" id="statsRow">
+      <div class="stat-card">
+        <span class="stat-label">Outstanding</span>
+        <span class="stat-value" id="statOutstanding">Rs. 0</span>
+        <span class="stat-sub">Sent + overdue invoices, converted to INR</span>
+      </div>
+      <div class="stat-card danger">
+        <span class="stat-label">Overdue</span>
+        <span class="stat-value" id="statOverdue">0</span>
+        <span class="stat-sub">Past due date, unpaid</span>
+      </div>
+      <div class="stat-card success">
+        <span class="stat-label">Paid this month</span>
+        <span class="stat-value" id="statPaid">Rs. 0</span>
+        <span class="stat-sub">Marked paid in current month</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Clients</span>
+        <span class="stat-value" id="statClients">0</span>
+        <span class="stat-sub">Total active clients</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Clients</h2>
+        <button id="addClientBtn" class="btn-secondary">+ Add client</button>
+      </div>
+      <div id="clientsList" class="clients-list"></div>
+      <div id="clientsEmpty" class="empty-note hidden">No clients yet. Add one to start invoicing.</div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Invoices</h2>
+        <button id="addInvoiceBtn" class="btn-primary">+ New invoice</button>
+      </div>
+
+      <div class="filter-row" id="filterRow">
+        <button class="filter-chip active" data-filter="all">All</button>
+        <button class="filter-chip" data-filter="draft">Draft</button>
+        <button class="filter-chip" data-filter="sent">Sent</button>
+        <button class="filter-chip" data-filter="paid">Paid</button>
+        <button class="filter-chip" data-filter="overdue">Overdue</button>
+      </div>
+
+      <div id="invoicesList" class="invoices-list"></div>
+      <div id="invoicesEmpty" class="empty-note hidden">No invoices yet. Create your first one.</div>
+    </section>
+  </main>
+</div>
+
+<!-- CLIENT MODAL -->
+<div id="clientModal" class="modal hidden">
+  <div class="modal-card">
+    <div class="modal-head">
+      <span>Add client</span>
+      <button class="modal-close" data-close="clientModal">&times;</button>
+    </div>
+    <form id="clientForm">
+      <input type="hidden" id="clientEditId" />
+      <label>Client / company name</label>
+      <input type="text" id="cName" required placeholder="e.g. Northwind Studio" />
+      <label>Contact email (optional)</label>
+      <input type="email" id="cEmail" placeholder="billing@client.com" />
+      <label>Country</label>
+      <input type="text" id="cCountry" placeholder="e.g. United States" />
+      <label>Default currency</label>
+      <select id="cCurrency">
+        <option value="USD">USD — US Dollar</option>
+        <option value="EUR">EUR — Euro</option>
+        <option value="GBP">GBP — British Pound</option>
+        <option value="INR">INR — Indian Rupee</option>
+        <option value="AUD">AUD — Australian Dollar</option>
+        <option value="CAD">CAD — Canadian Dollar</option>
+      </select>
+      <button type="submit" class="modal-submit">Save client</button>
+      <p class="modal-error" id="clientError"></p>
+    </form>
+  </div>
+</div>
+
+<!-- INVOICE MODAL -->
+<div id="invoiceModal" class="modal hidden">
+  <div class="modal-card">
+    <div class="modal-head">
+      <span id="invoiceModalTitle">New invoice</span>
+      <button class="modal-close" data-close="invoiceModal">&times;</button>
+    </div>
+    <form id="invoiceForm">
+      <input type="hidden" id="invoiceEditId" />
+      <label>Client</label>
+      <select id="iClient" required></select>
+      <label>Invoice number</label>
+      <input type="text" id="iNumber" required placeholder="e.g. INV-004" />
+      <label>Amount</label>
+      <div class="amount-row">
+        <input type="number" id="iAmount" required min="0" step="0.01" placeholder="0.00" />
+        <select id="iCurrency">
+          <option value="USD">USD</option>
+          <option value="EUR">EUR</option>
+          <option value="GBP">GBP</option>
+          <option value="INR">INR</option>
+          <option value="AUD">AUD</option>
+          <option value="CAD">CAD</option>
+        </select>
+      </div>
+      <label>Issue date</label>
+      <input type="date" id="iIssueDate" required />
+      <label>Due date</label>
+      <input type="date" id="iDueDate" required />
+      <label>Status</label>
+      <select id="iStatus">
+        <option value="draft">Draft</option>
+        <option value="sent">Sent</option>
+        <option value="paid">Paid</option>
+      </select>
+      <label>Notes (optional)</label>
+      <textarea id="iNotes" rows="2" placeholder="Scope of work, milestone, etc."></textarea>
+      <button type="submit" class="modal-submit">Save invoice</button>
+      <p class="modal-error" id="invoiceError"></p>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>
